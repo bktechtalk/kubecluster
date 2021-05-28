@@ -1,0 +1,32 @@
+- name: create the 'devopsadm' user
+  user: 
+    name: devopsadm
+    append: yes 
+    state: present
+    createhome: yes 
+    shell: /bin/bash
+    generate_ssh_key: yes
+    ssh_key_bits: 2048
+    ssh_key_file: .ssh/id_rsa
+
+- name: Configure 'devopsadm' to have passwordless sudo for all kubernetes servers
+  lineinfile:
+    dest: /etc/sudoers
+    line: 'devopsadm ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+- name: Set authorized key took from file
+  authorized_key:
+    user: devopsadm
+    state: present
+    key: "{{ lookup('file', '/home/devopsadm/.ssh/id_rsa.pub') }}"
+
+- name: Disabling Swap on all nodes
+  shell: swapoff -a
+
+- name: Commenting Swap entries in /etc/fstab
+  replace:
+    path: /etc/fstab
+    regexp: '(.*swap*)'
+    replace: '#\1'
+

@@ -1,0 +1,10 @@
+[masters]
+kubemas01
+
+[workers]
+kubenode01
+kubenode02
+
+[all:vars]
+ansible_user=root
+ansible_ssh_pass=qwerty

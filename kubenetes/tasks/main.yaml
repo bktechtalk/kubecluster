@@ -1,0 +1,21 @@
+---
+- name: Install dependency of server
+  include: systemconfgure.yaml
+  tags:
+    - software
+
+- name: configure system
+  include: kubepre-requisite.yaml
+  tags:
+    - serverconf
+
+- name: Configure Master Node
+  include: master_conf.yaml
+  tags:
+    - masternode
+  when: inventory_hostname in groups ['masters']
+
+#- name: Configure worker Node
+#  include: hashicorp_oracle.yaml
+#  tags:
+#    - workernode

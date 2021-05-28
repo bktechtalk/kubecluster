@@ -1,0 +1,101 @@
+#- name: Remove docker if installed 
+#  yum:
+#    name: "{{ item }}"
+#    state: removed
+#  loop:
+#    - docker
+#   - docker-client
+#    - docker-client-latest
+#    - docker-common
+#    - docker-latest
+#    - docker-latest-logrotate
+#    - docker-logrotate
+#    - docker-engine
+
+- name: Install packages for dockers
+  yum:
+    name: "{{ item }}"
+    state: latest
+  loop:
+    - yum-utils
+    - device-mapper-persistent-data
+    - lvm2
+
+- name: Creating a repository file for docker
+  file:
+    path: /etc/yum.repos.d/centos.repo
+    state: touch
+
+- name: Adding repository details in docker repo file.
+  blockinfile:
+    path: /etc/yum.repos.d/centos.repo
+    block: |
+     [CentOS-extras]
+     name=CentOS-7-Extras
+     mirrorlist=http://mirrorlist.centos.org/?release=7&arch=$basearch&repo=extras&infra=$infra
+     #baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/
+     gpgcheck=0 
+     gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+- name: Install Docker
+  package:
+    name: docker
+    state: latest
+  become: yes
+
+- name: Start Docker service
+  service:
+    name: docker
+    state: started
+    enabled: yes
+  become: yes
+
+- name: Creating a repository file for Kubernetes
+  file:
+    path: /etc/yum.repos.d/kubernetes.repo
+    state: touch
+
+- name: Adding repository details in Kubernetes repo file.
+  blockinfile:
+    path: /etc/yum.repos.d/kubernetes.repo
+    block: |
+     [kubernetes]
+     name=Kubernetes
+     baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+     enabled=1
+     gpgcheck=1
+     repo_gpgcheck=1
+     gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
+       https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+- name: Installing required packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop: 
+    - kubeadm
+    - kubectl
+
+
+- name: Starting and Enabling the required services
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  loop:
+    - kubelet
+    - firewalld
+
+- name: Allow Network Ports in Firewalld
+  firewalld:
+    port: "{{ item }}"
+    state: enabled
+    permanent: yes
+    immediate: yes
+  loop:
+    - "6443/tcp"
+    - "10250/tcp"
+
+
+- name: Enabling Bridge Firewall Rule
+  shell: "echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables"

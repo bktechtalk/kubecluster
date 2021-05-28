@@ -1,0 +1,5 @@
+---
+#Edit these values only as per your environment
+##Enter your master node advertise ip address and cidr range for the pods.
+cluster_endpoint_addr: 192.168.1.210
+network_cidr: 172.16.0.0/16
