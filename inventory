@@ -1,10 +1,13 @@
 [masters]
-kubemas01
+k8s-mas01
+k8s-mas02
+k8s-mas03
 
 [workers]
-kubenode01
-kubenode02
+k8s-wrk01
+k8s-wrk02
 
 [all:vars]
-ansible_user=root
+ansible_user=devops
 ansible_ssh_pass=qwerty
+ansible_become=yes
